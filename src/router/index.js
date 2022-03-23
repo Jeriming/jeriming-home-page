@@ -11,6 +11,10 @@ const routes = [
     path: "/simpler-water",
     component: SimpleWater,
   },
+  {
+    path: "/water-ripples",
+    component: () => import("@/components/WaterRipples.vue"),
+  },
 ];
 
 export default createRouter({
