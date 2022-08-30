@@ -15,6 +15,10 @@ const routes = [
     path: "/water-ripples",
     component: () => import("@/components/WaterRipples.vue"),
   },
+  {
+    path: "/windows-shutdown",
+    component: () => import("@/components/WinShutdown.vue"),
+  },
 ];
 
 export default createRouter({
