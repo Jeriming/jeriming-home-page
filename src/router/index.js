@@ -19,6 +19,10 @@ const routes = [
     path: "/windows-shutdown",
     component: () => import("@/components/WinShutdown.vue"),
   },
+  {
+    path: "/lottery",
+    component: () => import("@/components/Lottery.vue"),
+  },
 ];
 
 export default createRouter({
