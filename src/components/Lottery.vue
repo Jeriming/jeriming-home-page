@@ -1,5 +1,8 @@
 <template>
   <div class="lottery-container">
+    <button @click="autoTick">自动计算生成一等奖所需要的次数</button>
+    <div>生产随机的7个球（逗号隔开，最后一位蓝球）： {{ randResult }}</div>
+    <div>自动计算的次数： {{ count }}</div>
     <div class="result">
       <span class="date">开奖时间：{{ time }}</span>
       <ul class="balls">
@@ -24,6 +27,12 @@ export default {
       allBlueBalls: [],
       time: dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss"),
       index: -1,
+      selfReds: [],
+      selfBlues: [],
+      randResult: "",
+      count: 0,
+      success: false,
+      timer: null,
     };
   },
   computed: {
@@ -32,12 +41,94 @@ export default {
     },
   },
   created() {
+    this.initSelfNumber();
     this.initResult();
   },
   methods: {
+    autoTick() {
+      if (this.success) {
+        this.initSelfNumber();
+        this.success = false;
+      }
+      if (this.timer) return;
+      this.timer = setInterval(() => {
+        if (this.success) {
+          clearInterval(this.timer);
+          this.timer = null;
+          return;
+        }
+        if (this.index === -1) {
+          this.onTick();
+        } else if (this.index === 6) {
+          this.clearTick();
+        } else {
+          this.onNext();
+        }
+      }, 100);
+    },
+    initSelfNumber() {
+      // 生成随机的7个球
+      const r1 = this.initArrayByLen(33);
+      const r2 = this.initArrayByLen(16);
+      const blues = [];
+      while (blues.length < 6) {
+        blues.push(r1.splice(this.getRandNum(0, r1.length - 1), 1)[0]);
+      }
+      blues.sort((i, j) => i - j);
+      this.selfReds = blues;
+      this.selfBlues = [r2[this.getRandNum(0, r2.length - 1)]];
+      this.randResult =
+        "红：" + this.selfReds.join(",") + "蓝：" + this.selfBlues.join(",");
+    },
     clearTick() {
       this.index = -1;
       this.initResult();
+      this.count++;
+    },
+    checkIsSuccess() {
+      const red = [...this.redBalls];
+      const blue = this.blueBalls[0];
+
+      let rednumber = 0;
+      let blueNumber = 0;
+      for (let i = 0; i < red.length; i++) {
+        if (this.selfReds.includes(red[i])) {
+          rednumber++;
+        }
+      }
+      if (this.selfBlues.includes(blue)) {
+        blueNumber++;
+      }
+
+      if (rednumber === 6 && blueNumber === 1) {
+        this.success = true;
+        alert("恭喜中了一等奖");
+        return true;
+      }
+      if (rednumber === 6 && blueNumber === 0) {
+        this.success = true;
+        alert("恭喜中了二等奖");
+        return true;
+      }
+      if (rednumber === 5 && blueNumber === 1) {
+        this.success = true;
+        alert("恭喜中了三等奖");
+        return true;
+      }
+      if (
+        (rednumber === 5 && blueNumber === 0) ||
+        (rednumber === 4 && blueNumber === 1)
+      ) {
+        this.success = true;
+        alert("恭喜中了四等奖");
+        return true;
+      }
+      if (rednumber < 3 && blueNumber === 1) {
+        this.success = true;
+        alert("恭喜中了六等奖");
+        return true;
+      }
+      return false;
     },
     onTick() {
       this.initAllBalls();
@@ -47,6 +138,10 @@ export default {
     onNext() {
       this.index++;
       this.getOneBall();
+      if (this.index === 6) {
+        // 清空前，计算下是否中将
+        this.checkIsSuccess();
+      }
     },
     getOneBall() {
       if (this.index === 6) {
