@@ -1,7 +1,7 @@
 <template>
   <div class="lottery-container">
     <button @click="autoTick">自动计算生成一等奖所需要的次数</button>
-    <div>生产随机的7个球（逗号隔开，最后一位蓝球）： {{ randResult }}</div>
+    <div>生产随机的7个球： 红：{{ selfRedStr }}，蓝：{{ selfBlueStr }}</div>
     <div>自动计算的次数： {{ count }}</div>
     <div class="result">
       <span class="date">开奖时间：{{ time }}</span>
@@ -29,7 +29,6 @@ export default {
       index: -1,
       selfReds: [],
       selfBlues: [],
-      randResult: "",
       count: 0,
       success: false,
       timer: null,
@@ -38,6 +37,12 @@ export default {
   computed: {
     result() {
       return this.redBalls.concat(this.blueBalls);
+    },
+    selfRedStr() {
+      return this.selfReds.join(",");
+    },
+    selfBlueStr() {
+      return this.selfBlues.join(",");
     },
   },
   created() {
@@ -67,6 +72,7 @@ export default {
       }, 100);
     },
     initSelfNumber() {
+      if (!this.success && this.getDataFromLocal()) return;
       // 生成随机的7个球
       const r1 = this.initArrayByLen(33);
       const r2 = this.initArrayByLen(16);
@@ -77,13 +83,13 @@ export default {
       blues.sort((i, j) => i - j);
       this.selfReds = blues;
       this.selfBlues = [r2[this.getRandNum(0, r2.length - 1)]];
-      this.randResult =
-        "红：" + this.selfReds.join(",") + "蓝：" + this.selfBlues.join(",");
+      this.setDataToLocal();
     },
     clearTick() {
       this.index = -1;
       this.initResult();
       this.count++;
+      localStorage.setItem("count", this.count);
     },
     checkIsSuccess() {
       const red = [...this.redBalls];
@@ -92,11 +98,11 @@ export default {
       let rednumber = 0;
       let blueNumber = 0;
       for (let i = 0; i < red.length; i++) {
-        if (this.selfReds.includes(red[i])) {
+        if (this.selfReds.includes(red[i].value)) {
           rednumber++;
         }
       }
-      if (this.selfBlues.includes(blue)) {
+      if (this.selfBlues.includes(blue.value)) {
         blueNumber++;
       }
 
@@ -208,6 +214,26 @@ export default {
           );
         })
       );
+    },
+    getDataFromLocal() {
+      try {
+        this.selfReds = JSON.parse(localStorage.getItem("red"));
+        this.selfBlues = JSON.parse(localStorage.getItem("blue"));
+        this.count = parseInt(localStorage.getItem("count")) || 0;
+        if (!this.selfReds || !this.selfBlues || !this.count)
+          throw new ErrorEvent("no local data");
+        return true;
+      } catch (e) {
+        this.selfReds = [];
+        this.selfBlues = [];
+        this.count = 0;
+        return false;
+      }
+    },
+    setDataToLocal() {
+      localStorage.setItem("red", JSON.stringify(this.selfReds));
+      localStorage.setItem("blue", JSON.stringify(this.selfBlues));
+      localStorage.setItem("count", this.count);
     },
   },
 };
