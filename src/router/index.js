@@ -23,6 +23,10 @@ const routes = [
     path: "/lottery",
     component: () => import("@/components/Lottery.vue"),
   },
+  {
+    path: "/merge-stack",
+    component: () => import("@/components/MergeBar.vue"),
+  },
 ];
 
 export default createRouter({
