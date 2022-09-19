@@ -27,6 +27,10 @@ const routes = [
     path: "/merge-stack",
     component: () => import("@/components/MergeBar.vue"),
   },
+  {
+    path: "/custom-chart",
+    component: () => import("@/components/CustomChart.vue"),
+  },
 ];
 
 export default createRouter({
